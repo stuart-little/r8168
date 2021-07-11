@@ -94,7 +94,10 @@ ifneq ($(KERNELRELEASE),)
 		EXTRA_CFLAGS += -DENABLE_USE_FIRMWARE_FILE
 	endif
 else
-	BASEDIR := /lib/modules/$(shell uname -r)
+	ifeq ($(WKDIR),)
+		WKDIR := $(HOME)
+	endif
+	BASEDIR := $(WKDIR)/lnx/lib/modules/$(shell ls $(WKDIR)/lnx/lib/modules)
 	KERNELDIR ?= $(BASEDIR)/build
 	PWD :=$(shell pwd)
 	DRIVERDIR := $(shell find $(BASEDIR)/kernel/drivers/net/ethernet -name realtek -type d)
@@ -146,26 +149,14 @@ print_vars:
 
 .PHONY:modules
 modules:
-#ifeq ($(call kver_ge,5,0,0),1)
 	$(MAKE) -C $(KERNELDIR) M=$(PWD) modules
-#else
-#	$(MAKE) -C $(KERNELDIR) SUBDIRS=$(PWD) modules
-#endif
 
 .PHONY:clean
 clean:
-#ifeq ($(call kver_ge,5,0,0),1)
 	$(MAKE) -C $(KERNELDIR) M=$(PWD) clean
-#else
-#	$(MAKE) -C $(KERNELDIR) SUBDIRS=$(PWD) clean
-#endif
 
 .PHONY:install
 install:
-#ifeq ($(call kver_ge,5,0,0),1)
-	$(MAKE) -C $(KERNELDIR) M=$(PWD) INSTALL_MOD_DIR=$(RTKDIR) modules_install
-#else
-#	$(MAKE) -C $(KERNELDIR) SUBDIRS=$(PWD) INSTALL_MOD_DIR=$(RTKDIR) modules_install
-#endif
+	$(MAKE) -C $(KERNELDIR) M=$(PWD) INSTALL_MOD_DIR=$(RTKDIR) INSTALL_MOD_PATH=$(WKDIR)/lnx/ modules_install
 
 endif
